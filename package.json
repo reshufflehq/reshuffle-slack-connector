@@ -1,7 +1,7 @@
 {
-  "name": "reshuffle-connectorname-connector",
+  "name": "reshuffle-slack-connector",
   "version": "0.0.1",
-  "description": "A Reshuffle _CONNECTOR_NAME_ connector",
+  "description": "A Reshuffle Slack connector",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -13,21 +13,25 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/reshufflehq/reshuffle-_CONNECTOR_NAME_-connector.git"
+    "url": "git+https://github.com/reshufflehq/reshuffle-slack-connector.git"
   },
   "keywords": [
     "Reshuffle",
     "integrations",
-    "workflows"
+    "workflows",
+    "Slack"
   ],
-  "author": "",
+  "author": "Reshuffle",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/reshufflehq/reshuffle-_CONNECTOR_NAME_-connector/issues"
+    "url": "https://github.com/reshufflehq/reshuffle-slack-connector/issues"
   },
-  "homepage": "https://github.com/reshufflehq/reshuffle-_CONNECTOR_NAME_-connector#readme",
+  "homepage": "https://github.com/reshufflehq/reshuffle-slack-connector#readme",
   "dependencies": {
-    "reshuffle-base-connector": "^0.0.10"
+    "reshuffle-base-connector": "^0.0.11",
+    "@slack/interactive-messages": "^1.6.0",
+    "@slack/web-api": "^5.9.0",
+    "@slack/bolt": "^1.8.0"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^3.10.1",

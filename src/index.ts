@@ -1,30 +1,43 @@
 import { Reshuffle, BaseConnector, EventConfiguration } from 'reshuffle-base-connector'
+import SlackMessage from './SlackMessage'
+import { WebClient } from '@slack/web-api'
+import { App, ExpressReceiver } from '@slack/bolt'
 
-export interface _CONNECTOR_NAME_ConnectorConfigOptions {
-  var1: string
-  // ...
+// import { Router } from 'express'
+// import { createMessageAdapter } from '@slack/interactive-messages'
+
+export interface SlackConnectorConfigOptions {
+  token: string
+  signingSecret: string
+  port: number
 }
 
-export interface _CONNECTOR_NAME_ConnectorEventOptions {
+export interface SlackConnectorEventOptions {
   option1?: string
   // ...
 }
 
-export default class _CONNECTOR_NAME_Connector extends BaseConnector<
-  _CONNECTOR_NAME_ConnectorConfigOptions,
-  _CONNECTOR_NAME_ConnectorEventOptions
+export default class SlackConnector extends BaseConnector<
+  SlackConnectorConfigOptions,
+  SlackConnectorEventOptions
 > {
-  // Your class variables
-  var1: string
+  private slackApp: App
+  private web: WebClient
 
-  constructor(app: Reshuffle, options?: _CONNECTOR_NAME_ConnectorConfigOptions, id?: string) {
+  constructor(app: Reshuffle, options: SlackConnectorConfigOptions, id?: string) {
     super(app, options, id)
-    this.var1 = options?.var1 || 'initial value'
+    this.web = new WebClient(options.token)
+    this.slackApp = new App({
+      token: options.token,
+      signingSecret: options.signingSecret,
+    })
     // ...
   }
 
   onStart(): void {
-    // If you need to do something specific on start, otherwise remove this function
+    this.slackApp
+      .start(this.configOptions!.port)
+      .then((res) => console.log('Slack Connector ready'))
   }
 
   onStop(): void {
@@ -32,13 +45,9 @@ export default class _CONNECTOR_NAME_Connector extends BaseConnector<
   }
 
   // Your events
-  on(
-    options: _CONNECTOR_NAME_ConnectorEventOptions,
-    handler: any,
-    eventId: string,
-  ): EventConfiguration {
+  on(options: SlackConnectorEventOptions, handler: any, eventId: string): EventConfiguration {
     if (!eventId) {
-      eventId = `_CONNECTOR_NAME_/${options.option1}/${this.id}`
+      eventId = `Slack/${options.option1}/${this.id}`
     }
     const event = new EventConfiguration(eventId, this, options)
     this.eventConfigurations[event.id] = event
@@ -48,14 +57,33 @@ export default class _CONNECTOR_NAME_Connector extends BaseConnector<
     return event
   }
 
-  // Your actions
-  action1(bar: string): void {
-    // Your implementation here
-  }
+  // Action
+  public async postMessage(
+    channel: string,
+    message: string | SlackMessage | any[] | ((msg: SlackMessage) => string | undefined),
+  ): Promise<void> {
+    let msg: string | SlackMessage
+    if (typeof message === 'string' || message instanceof SlackMessage) {
+      msg = message
+    } else if (Array.isArray(message)) {
+      msg = new SlackMessage(message)
+    } else if (typeof message === 'function') {
+      const m = new SlackMessage()
+      const rv = message(m)
+      msg = rv === undefined ? m : String(rv)
+    } else {
+      throw new Error(`Invalid message: ${message}`)
+    }
 
-  action2(foo: string): void {
-    // Your implementation here
+    let payload: any = {}
+    if (typeof msg === 'string') {
+      payload = { text: msg, link_names: true }
+    } else {
+      payload = { blocks: msg.getBlocks() }
+    }
+
+    await this.web.chat.postMessage({ channel, ...payload })
   }
 }
 
-export { _CONNECTOR_NAME_Connector }
+export { SlackConnector }
