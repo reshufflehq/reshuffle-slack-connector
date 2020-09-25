@@ -19,7 +19,7 @@ export default class SlackMessage {
     }
   }
 
-  public button(caption: string, action: string, payload: any, style?: string) {
+  public button(text: string, action: string, payload: any, style?: string) {
     if (!ACTION_REGEX.test(action)) {
       throw new Error(`Invalid action: ${action}`)
     }
@@ -28,9 +28,10 @@ export default class SlackMessage {
       type: 'button',
       text: {
         type: 'plain_text',
-        caption,
+        text,
       },
       value: JSON.stringify({ action, payload }),
+      action_id: `${action}_${text}`,
     }
 
     const st = typeof style === 'string' ? style.toLowerCase() : style
@@ -39,6 +40,19 @@ export default class SlackMessage {
     }
     if (st) {
       btn.style = st
+    }
+
+    this.actions.push(btn)
+  }
+
+  public link(text: string, url: string) {
+    const btn: any = {
+      type: 'button',
+      text: {
+        type: 'plain_text',
+        text,
+      },
+      url,
     }
 
     this.actions.push(btn)
@@ -83,18 +97,7 @@ export default class SlackMessage {
     this.blocks.push(img)
   }
 
-  public markdown(md: string) {
-    this.renderActions()
-    this.blocks.push({
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: md,
-      },
-    })
-  }
-
-  public plainText(text: string) {
+  public text(text: string) {
     this.renderActions()
     this.blocks.push({
       type: 'section',
@@ -103,10 +106,6 @@ export default class SlackMessage {
         text,
       },
     })
-  }
-
-  public text(text: string) {
-    return this.markdown(text)
   }
 
   public getBlocks(): any[] {
