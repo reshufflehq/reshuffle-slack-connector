@@ -31,9 +31,9 @@ export default class SlackConnector extends BaseConnector<
   SlackConnectorConfigOptions,
   SlackConnectorEventOptions
 > {
-  private receiver: ExpressReceiver
+  private readonly receiver: ExpressReceiver
   private slackApp: App
-  private web: WebClient
+  private readonly web: WebClient
 
   constructor(app: Reshuffle, options: SlackConnectorConfigOptions, id?: string) {
     options.port = options.port || 3000
@@ -53,8 +53,9 @@ export default class SlackConnector extends BaseConnector<
     this.slackApp.start(this.configOptions?.port).then(() => {
       this.app
         .getLogger()
-        .info(`Slack Connector - Slack app running on port ${this.configOptions?.port}`),
-        this.setupEventEmitters()
+        .info(`Slack Connector - Slack app running on port ${this.configOptions?.port}`)
+
+      this.setupEventEmitters()
     })
   }
 
@@ -62,7 +63,7 @@ export default class SlackConnector extends BaseConnector<
     this.slackApp.stop()
   }
 
-  setupEventEmitters() {
+  setupEventEmitters(): void {
     Object.values(this.eventConfigurations).forEach((event) => {
       const options = event.options as SlackConnectorEventOptions
       switch (options.type) {
@@ -100,26 +101,24 @@ export default class SlackConnector extends BaseConnector<
       | Array<SlackMessage | string>
       | ((msg: SlackMessage) => string | undefined),
   ): Promise<WebAPICallResult | void> {
-    try {
-      let msg: string | SlackMessage
-      if (typeof message === 'string' || message instanceof SlackMessage) {
-        msg = message
-      } else if (Array.isArray(message)) {
-        msg = new SlackMessage(message)
-      } else if (typeof message === 'function') {
-        const m = new SlackMessage()
-        const rv = message(m)
-        msg = rv === undefined ? m : String(rv)
-      } else {
-        throw new Error(`Invalid message: ${message}`)
-      }
+    let msg: string | SlackMessage
+    if (typeof message === 'string' || message instanceof SlackMessage) {
+      msg = message
+    } else if (Array.isArray(message)) {
+      msg = new SlackMessage(message)
+    } else if (typeof message === 'function') {
+      const m = new SlackMessage()
+      const rv = message(m)
+      msg = rv === undefined ? m : String(rv)
+    } else {
+      throw new Error(`Invalid message: ${message}`)
+    }
 
-      let payload: any = {}
-      if (typeof msg === 'string') {
-        payload = { text: msg, link_names: true }
-      } else {
-        payload = { blocks: msg.getBlocks() }
-      }
+    try {
+      const payload =
+        typeof msg === 'string'
+          ? { text: msg, link_names: true }
+          : { text: '', blocks: msg.getBlocks() }
 
       const response = await this.web.chat.postMessage({ channel, ...payload })
 

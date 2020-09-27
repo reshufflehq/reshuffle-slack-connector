@@ -1,7 +1,7 @@
 const ACTION_REGEX = /^[a-z0-9-]+$/
 
 export default class SlackMessage {
-  private blocks: any[]
+  private readonly blocks: any[]
   private actions: any[]
 
   constructor(blocks?: any[]) {
@@ -19,12 +19,17 @@ export default class SlackMessage {
     }
   }
 
-  public button(text: string, action: string, payload: any, style?: string) {
+  public button(text: string, action: string, payload: any, styleToApply?: string): void {
     if (!ACTION_REGEX.test(action)) {
       throw new Error(`Invalid action: ${action}`)
     }
 
-    const btn: any = {
+    const style = typeof styleToApply === 'string' ? styleToApply.toLowerCase() : styleToApply
+    if (style !== undefined && style !== 'primary' && style !== 'danger') {
+      throw new Error(`Invalid button style: ${styleToApply}`)
+    }
+
+    const btn = {
       type: 'button',
       text: {
         type: 'plain_text',
@@ -32,21 +37,14 @@ export default class SlackMessage {
       },
       value: JSON.stringify({ action, payload }),
       action_id: `${action}_${text}`,
-    }
-
-    const st = typeof style === 'string' ? style.toLowerCase() : style
-    if (st !== undefined && st !== 'primary' && st !== 'danger') {
-      throw new Error(`Invalid button style: ${style}`)
-    }
-    if (st) {
-      btn.style = st
+      style,
     }
 
     this.actions.push(btn)
   }
 
-  public link(text: string, url: string) {
-    const btn: any = {
+  public link(text: string, url: string): void {
+    const btn = {
       type: 'button',
       text: {
         type: 'plain_text',
@@ -58,22 +56,22 @@ export default class SlackMessage {
     this.actions.push(btn)
   }
 
-  public dangerButton(text: string, action: string, payload: any) {
+  public dangerButton(text: string, action: string, payload: any): void {
     this.button(text, action, payload, 'danger')
   }
 
-  public primaryButton(text: string, action: string, payload: any) {
+  public primaryButton(text: string, action: string, payload: any): void {
     this.button(text, action, payload, 'primary')
   }
 
-  public divider() {
+  public divider(): void {
     this.renderActions()
     this.blocks.push({
       type: 'divider',
     })
   }
 
-  public fields(...args: string[]) {
+  public fields(...args: string[]): void {
     this.renderActions()
     this.blocks.push({
       type: 'section',
@@ -81,7 +79,7 @@ export default class SlackMessage {
     })
   }
 
-  public image(url: string, alt: string, title?: string) {
+  public image(url: string, alt: string, title?: string): void {
     this.renderActions()
     const img: any = {
       type: 'image',
@@ -97,7 +95,7 @@ export default class SlackMessage {
     this.blocks.push(img)
   }
 
-  public text(text: string) {
+  public text(text: string): void {
     this.renderActions()
     this.blocks.push({
       type: 'section',
@@ -110,6 +108,6 @@ export default class SlackMessage {
 
   public getBlocks(): any[] {
     this.renderActions()
-    return [...this.blocks]
+    return this.blocks
   }
 }
