@@ -20,6 +20,11 @@ export interface SlackConnectorConfigOptions {
   token: string
   signingSecret: string
   port?: number
+  endpoints?:
+    | string
+    | {
+        [endpointType: string]: string
+      }
 }
 
 export interface SlackConnectorEventOptions {
@@ -32,16 +37,16 @@ export default class SlackConnector extends BaseConnector<
   SlackConnectorEventOptions
 > {
   private readonly receiver: ExpressReceiver
-  private slackApp: App
-  private readonly web: WebClient
+  private readonly slackApp: App
+  private readonly webClient: WebClient
 
   constructor(app: Reshuffle, options: SlackConnectorConfigOptions, id?: string) {
     options.port = options.port || 3000
     super(app, options, id)
-    this.web = new WebClient(options.token)
+    this.webClient = new WebClient(options.token)
     this.receiver = new ExpressReceiver({
       signingSecret: options.signingSecret,
-      endpoints: '/',
+      endpoints: options.endpoints || '/',
     })
     this.slackApp = new App({
       token: options.token,
@@ -120,7 +125,7 @@ export default class SlackConnector extends BaseConnector<
           ? { text: msg, link_names: true }
           : { text: '', blocks: msg.getBlocks() }
 
-      const response = await this.web.chat.postMessage({ channel, ...payload })
+      const response = await this.webClient.chat.postMessage({ channel, ...payload })
 
       this.app
         .getLogger()
@@ -148,7 +153,7 @@ export default class SlackConnector extends BaseConnector<
   }
 
   public deleteMessage(channelId: string, timestamp: string): Promise<WebAPICallResult> {
-    return this.web.chat.delete({
+    return this.webClient.chat.delete({
       ts: timestamp,
       channel: channelId,
     })
@@ -161,7 +166,7 @@ export default class SlackConnector extends BaseConnector<
     msgOptions?: ChatScheduleMessageArguments,
   ): Promise<WebAPICallResult> {
     const toUnix = postAt.getTime() / 1000
-    return this.web.chat.scheduleMessage({
+    return this.webClient.chat.scheduleMessage({
       post_at: toUnix.toString(),
       channel,
       text,
@@ -178,8 +183,19 @@ export default class SlackConnector extends BaseConnector<
     })
   }
 
-  sdk(): WebClient {
-    return this.web
+  public getWebClient(): WebClient {
+    return this.webClient
+  }
+
+  public getSlackApp(): App {
+    return this.slackApp
+  }
+
+  public sdk(): { slackApp: App; webClient: WebClient } {
+    return {
+      slackApp: this.getSlackApp(),
+      webClient: this.getWebClient(),
+    }
   }
 }
 

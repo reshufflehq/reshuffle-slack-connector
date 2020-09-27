@@ -6,26 +6,32 @@ _Commonjs_: `const { SlackConnector } = require('reshuffle-slack-connector')`
 
 _ES6 import_: `import { SlackConnector } from 'reshuffle-slack-connector'` 
 
-Interact with Slack
 
-The connector is designed to work with Slack and allow you to post messages directly into Slack.
+This connector is designed to interact with Slack API and allow you to post/amend/delete/search messages directly into Slack.
 
 To create a Slack connector, you need to provide configuration options like this:
 ```ts
-export interface SlackConnectorConfigOptions {
+interface SlackConnectorConfigOptions {
   token: string
   signingSecret: string
   port?: number
+  endpoints?:
+    | string
+    | {
+        [endpointType: string]: string
+      }
 }
 ```
 
 Create a new Slack Connector:
+Token and signingSecret are found at https://api.slack.com/apps/<your_slack_app_id>/event-subscriptions
 ```ts
 const app = new Reshuffle()
 const slackConnector = new SlackConnector(app, {
 token: '<starts with xox>',
 signingSecret: '<signing_secret>',
-port: '<slack_app_port>',
+port: '<slack_app_port>', // default port is 3000
+endpoints: '<slack_app_endpoints>' // default endpoints is'/'
 })
 ```
 
@@ -45,6 +51,12 @@ _Actions_:
 *[deleteMessage](#deleteMessage) Delete an existing Slack message.
 
 *[searchMessages](#searchMessages) Search Slack for a message matching a specified query string.
+
+*[getWebClient](#getwebclient) Get Slack Web Client.
+
+*[getSlackApp](#getslackapp) Get Slack Application instance.
+
+*[sdk](#sdk) Returns a Slack Application instance, and a Slack web client instance.
 
 ### Connector Events
 
@@ -324,9 +336,66 @@ _Usage:_
 await slackConnector.searchMessages('some text to look for')
 ```
 
+#### <a name="getwebclient"></a>Get Slack Web Client
+
+[Slack Documentation 'web API'](https://slack.dev/bolt-js/concepts#web-api)
+
+Get Slack Web Client instance to code bespoke solutions
+
+_Definition:_
+
+```
+() => WebClient
+```
+
+_Usage:_
+
+```js
+const webClient = await slackConnector.getWebClient()
+
+// Example:
+await webClient.chat.delete({options})
+```
+
+#### <a name="getslackapp"></a>Get Slack Application instance
+
+[Slack Documentation 'Creating a Slack App'](https://api.slack.com/start/building/bolt-js#create)
+
+Get Slack Application instance for coding advanced features
+
+_Definition:_
+
+```
+() => App
+```
+
+_Usage:_
+
+```js
+const slackApp = await slackConnector.getSlackApp()
+
+// Example:
+await slackApp.client.chat.update({options})
+```
+
+#### <a name="sdk"></a>Returns Reshuffle Slack sdk
+
+Returns a Slack Application instance, and a Slack web client instance
+
+_Definition:_
+
+```
+() => { slackApp: App; webClient: WebClient }
+```
+
+_Usage:_
+
+```js
+const { slackApp, webClient } = await slackConnector.sdk()
+```
+
 ## API definitions
 
-[Definition of
-WebAPICallResult](https://github.com/slackapi/node-slack-sdk/blob/aa269d160f10b3414812ee335b1dfa961d214c77/packages/web-api/src/WebClient.ts#L874)
+[Definition of WebAPICallResult](https://github.com/slackapi/node-slack-sdk/blob/aa269d160f10b3414812ee335b1dfa961d214c77/packages/web-api/src/WebClient.ts#L874)
 
 More examples on how to use this connector can be [found here](https://github.com/reshufflehq/reshuffle/blob/master/examples/message/SlackMessageExample.js).
