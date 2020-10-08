@@ -74,10 +74,10 @@ export default class SlackConnector extends BaseConnector<
       switch (options.type) {
         case SlackEventType.EVENT: {
           const eventType = options.values.type
-          this.slackApp.event(eventType, async (context) => {
+          this.slackApp.event(eventType, async (slackEvent) => {
             await this.app.handleEvent(event.id, {
               ...event,
-              context,
+              ...slackEvent,
             })
           })
           break

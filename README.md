@@ -68,8 +68,8 @@ As event option values, pass the Slack Event API type (e.g. 'message') for firin
 
 ['Full list of Slack Event API type'](https://api.slack.com/events)
 
-Your handler receives an event object with an attribute context.
-Example of event.context:
+Your handler receives an event object.
+Example of event object received:
 ```ts
 {
   payload: {
@@ -111,7 +111,7 @@ slackConnector.on(
 },
 (event) => {
   console.log('new message posted on Slack')
-  console.log(JSON.stringify(event.context))
+  console.log(JSON.stringify(event))
 },
 )
 
@@ -142,7 +142,7 @@ slackConnector.on(
 },
 (event) => {
   console.log('new message posted on Slack')
-  console.log(JSON.stringify(event.context))
+  console.log(JSON.stringify(event))
 },
 )
 
