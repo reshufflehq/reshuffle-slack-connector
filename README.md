@@ -68,7 +68,7 @@ As event option values, pass the Slack Event API type (e.g. 'message') for firin
 
 ['Full list of Slack Event API type'](https://api.slack.com/events)
 
-Your handler receives an event object.
+Your handler receives an event object and Reshuffle app.
 Example of event object received:
 ```ts
 {
@@ -109,7 +109,7 @@ slackConnector.on(
     type: SlackEvents.MESSAGE,
   },
 },
-(event) => {
+(event, app) => {
   console.log('new message posted on Slack')
   console.log(JSON.stringify(event))
 },
@@ -140,7 +140,7 @@ slackConnector.on(
     type: SlackEvents.MESSAGE,
   },
 },
-(event) => {
+(event, app) => {
   console.log('new message posted on Slack')
   console.log(JSON.stringify(event))
 },
