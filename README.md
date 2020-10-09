@@ -68,8 +68,8 @@ As event option values, pass the Slack Event API type (e.g. 'message') for firin
 
 ['Full list of Slack Event API type'](https://api.slack.com/events)
 
-Your handler receives an event object with several attributes.
-Example of `event`:
+Your handler receives an event object and Reshuffle app.
+Example of event object received:
 ```ts
 {
   payload: {
