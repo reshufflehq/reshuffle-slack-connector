@@ -9,6 +9,15 @@ _ES6 import_: `import { SlackConnector } from 'reshuffle-slack-connector'`
 
 This connector is designed to interact with Slack API and allow you to post/amend/delete/search messages directly into Slack.
 
+This connector required a Slack App to be configured:
+- Go to https://api.slack.com/apps
+- Click on `Create New App`
+- Enter a `name` and select a `workspace`
+- Click on `Create App`
+- Click on your new app
+- The signing secret is under `Basic Information` > `App Credentials`
+- The token is under `Settings` > `Install App` > OAuth Access Token
+
 To create a Slack connector, you need to provide configuration options like this:
 ```ts
 interface SlackConnectorConfigOptions {
