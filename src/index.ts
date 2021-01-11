@@ -133,7 +133,7 @@ export default class SlackConnector extends BaseConnector<
 
       return response
     } catch (err) {
-      this.app.getLogger().error(`Slack Connector - postMessage error to channel ${channel}`)
+      this.app.getLogger().error(`Slack Connector - postMessage error to channel ${channel}: ${err}`)
     }
   }
 
